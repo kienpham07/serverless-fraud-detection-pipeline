@@ -1,0 +1,33 @@
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Testing & IDE
+.pytest_cache/
+.coverage
+htmlcov/
+.vscode/
+.idea/
+
+# Local Data staging (keep directory structure, ignore generated test CSVs)
+data/*.csv
+data/replay_output/
+!data/.gitkeep
+
+# Terraform local files
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+terraform/.terraform.lock.hcl
+
+# OS files
+.DS_Store
+Thumbs.db
