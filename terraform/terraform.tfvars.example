@@ -1,0 +1,4 @@
+aws_region   = "us-east-1"
+environment  = "dev"
+project_name = "serverless-fraud-detection"
+alert_email  = "security-ops@example.com"
