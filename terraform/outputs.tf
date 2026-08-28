@@ -41,3 +41,14 @@ output "alerting_lambda_role_arn" {
   description = "The ARN of the IAM role for the DynamoDB stream alerting Lambda function."
   value       = aws_iam_role.alerting_lambda_role.arn
 }
+
+# Lambda Outputs
+output "ingestion_lambda_function_name" {
+  description = "The name of the Ingestion Lambda function."
+  value       = aws_lambda_function.ingestion_lambda.function_name
+}
+
+output "ingestion_lambda_arn" {
+  description = "The ARN of the Ingestion Lambda function."
+  value       = aws_lambda_function.ingestion_lambda.arn
+}
