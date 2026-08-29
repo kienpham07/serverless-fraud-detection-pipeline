@@ -52,3 +52,13 @@ output "ingestion_lambda_arn" {
   description = "The ARN of the Ingestion Lambda function."
   value       = aws_lambda_function.ingestion_lambda.arn
 }
+
+output "alerting_lambda_function_name" {
+  description = "The name of the Alerting Lambda function."
+  value       = aws_lambda_function.alerting_lambda.function_name
+}
+
+output "alerting_lambda_arn" {
+  description = "The ARN of the Alerting Lambda function."
+  value       = aws_lambda_function.alerting_lambda.arn
+}
