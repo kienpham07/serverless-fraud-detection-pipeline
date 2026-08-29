@@ -63,6 +63,11 @@ output "alerting_lambda_arn" {
   value       = aws_lambda_function.alerting_lambda.arn
 }
 
+output "sklearn_layer_arn" {
+  description = "The ARN of the Scikit-Learn / ML dependencies Lambda layer."
+  value       = aws_lambda_layer_version.sklearn_layer.arn
+}
+
 # Glue & Athena Analytics Outputs
 output "glue_database_name" {
   description = "The name of the Glue Data Catalog database for fraud analytics."

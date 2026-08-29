@@ -24,6 +24,10 @@ resource "aws_lambda_function" "ingestion_lambda" {
 
   role = aws_iam_role.ingestion_lambda_role.arn
 
+  layers = [
+    aws_lambda_layer_version.sklearn_layer.arn
+  ]
+
   environment {
     variables = {
       DYNAMODB_TABLE_NAME = aws_dynamodb_table.flagged_transactions.name
@@ -34,6 +38,7 @@ resource "aws_lambda_function" "ingestion_lambda" {
 
   depends_on = [
     aws_iam_role_policy.ingestion_lambda_policy,
+    aws_lambda_layer_version.sklearn_layer,
   ]
 
   tags = {
