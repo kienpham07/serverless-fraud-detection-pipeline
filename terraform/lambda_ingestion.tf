@@ -51,11 +51,11 @@ resource "aws_lambda_function" "ingestion_lambda" {
 # Lambda Permission for S3 Invocations
 # ==============================================================================
 resource "aws_lambda_permission" "allow_s3_ingestion" {
-  statement_id  = "AllowS3RawBucketInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ingestion_lambda.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.raw_transactions.arn
+  statement_id   = "AllowS3RawBucketInvoke"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.ingestion_lambda.function_name
+  principal      = "s3.amazonaws.com"
+  source_arn     = aws_s3_bucket.raw_transactions.arn
   source_account = data.aws_caller_identity.current.account_id
 }
 

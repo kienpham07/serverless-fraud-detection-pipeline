@@ -61,19 +61,17 @@ docker run --rm \
         echo '[Container] Installing locked ML libraries...'
         python3.11 -m pip install \
             --no-cache-dir \
+            --only-binary=:all: \
             --target '${TARGET_SITE_PACKAGES}' \
-            scikit-learn==1.9.0 \
-            numpy==2.5.2 \
+            scikit-learn==1.7.2 \
+            numpy==2.2.6 \
             joblib==1.5.3 \
             pandas==3.0.5
 
         echo '[Container] Stripping unnecessary files to optimize package size...'
         find '${TARGET_SITE_PACKAGES}' -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
-        find '${TARGET_SITE_PACKAGES}' -type d -name 'tests' -exec rm -rf {} + 2>/dev/null || true
-        find '${TARGET_SITE_PACKAGES}' -type d -name 'test' -exec rm -rf {} + 2>/dev/null || true
         find '${TARGET_SITE_PACKAGES}' -type f -name '*.pyc' -delete || true
         find '${TARGET_SITE_PACKAGES}' -type f -name '*.pyo' -delete || true
-        find '${TARGET_SITE_PACKAGES}' -type f -name '*.dist-info' -exec rm -rf {} + 2>/dev/null || true
     "
 
 echo "[+] Packaging layer into zip archive..."
