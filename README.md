@@ -14,24 +14,35 @@ This repository contains:
 
 ## Table of Contents
 
-- [Background](#background)
-- [Install](#install)
-- [Usage](#usage)
-  - [Step 1: Prepare Local Environment & Dependencies](#step-1-prepare-local-environment--dependencies)
-  - [Step 2: Build the Scikit-Learn Lambda Layer](#step-2-build-the-scikit-learn-lambda-layer)
-  - [Step 3: Provision Infrastructure with Terraform](#step-3-provision-infrastructure-with-terraform)
-  - [Step 4: Confirm SNS Email Subscription](#step-4-confirm-sns-email-subscription)
-  - [Step 5: Run Automated End-to-End Test](#step-5-run-automated-end-to-end-test)
-  - [Step 6: Stream Real-Time Traffic Simulation](#step-6-stream-real-time-traffic-simulation)
-  - [Step 7: Inspect Multi-Tier Components & Query Analytics](#step-7-inspect-multi-tier-components--query-analytics)
-  - [Step 8: Clean Up & Teardown](#step-8-clean-up--teardown)
-  - [Transaction Schema & Input Format](#transaction-schema--input-format)
-  - [Pipeline Integration Interfaces](#pipeline-integration-interfaces)
-  - [Local Development](#local-development)
-- [Configuration](#configuration)
-- [Maintainers](#maintainers)
-- [Contributing](#contributing)
-- [License](#license)
+- [Serverless Fraud Detection Pipeline](#serverless-fraud-detection-pipeline)
+  - [Table of Contents](#table-of-contents)
+  - [Background](#background)
+    - [Expected Input Data Pattern (CSV)](#expected-input-data-pattern-csv)
+  - [Install](#install)
+    - [Prerequisites](#prerequisites)
+    - [Provisioning Infrastructure](#provisioning-infrastructure)
+  - [Usage](#usage)
+    - [Step 1: Prepare Local Environment \& Dependencies](#step-1-prepare-local-environment--dependencies)
+    - [Step 2: Build the Scikit-Learn Lambda Layer](#step-2-build-the-scikit-learn-lambda-layer)
+    - [Step 3: Provision Infrastructure with Terraform](#step-3-provision-infrastructure-with-terraform)
+    - [Step 4: Confirm SNS Email Subscription](#step-4-confirm-sns-email-subscription)
+    - [Step 5: Run Automated End-to-End Test](#step-5-run-automated-end-to-end-test)
+    - [Step 6: Stream Real-Time Traffic Simulation](#step-6-stream-real-time-traffic-simulation)
+    - [Step 7: Inspect Multi-Tier Components \& Query Analytics](#step-7-inspect-multi-tier-components--query-analytics)
+      - [1. Verify Flagged Items in DynamoDB](#1-verify-flagged-items-in-dynamodb)
+      - [2. Tail CloudWatch Logs](#2-tail-cloudwatch-logs)
+      - [3. Run Analytics via Amazon Athena](#3-run-analytics-via-amazon-athena)
+    - [Step 8: Clean Up \& Teardown](#step-8-clean-up--teardown)
+    - [Transaction Schema \& Input Format](#transaction-schema--input-format)
+    - [Pipeline Integration Interfaces](#pipeline-integration-interfaces)
+    - [Local Development](#local-development)
+  - [Configuration](#configuration)
+    - [Terraform Configuration Variables (`terraform/terraform.tfvars`)](#terraform-configuration-variables-terraformterraformtfvars)
+    - [Ingestion Lambda Environment Variables](#ingestion-lambda-environment-variables)
+    - [Alerting Lambda Environment Variables](#alerting-lambda-environment-variables)
+  - [Maintainers](#maintainers)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ---
 
@@ -179,6 +190,7 @@ Execute the automated test harness to inject known test vectors (`RULE_1`, `RULE
 ```bash
 python3 scripts/e2e_test.py --bucket "$S3_BUCKET_NAME"
 ```
+Expected output (Example):
 
 ```text
 ======================================================================
