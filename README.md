@@ -14,35 +14,27 @@ This repository contains:
 
 ## Table of Contents
 
-- [Serverless Fraud Detection Pipeline](#serverless-fraud-detection-pipeline)
-  - [Table of Contents](#table-of-contents)
-  - [Background](#background)
-    - [Expected Input Data Pattern (CSV)](#expected-input-data-pattern-csv)
-  - [Install](#install)
-    - [Prerequisites](#prerequisites)
-    - [Provisioning Infrastructure](#provisioning-infrastructure)
-  - [Usage](#usage)
-    - [Step 1: Prepare Local Environment \& Dependencies](#step-1-prepare-local-environment--dependencies)
-    - [Step 2: Build the Scikit-Learn Lambda Layer](#step-2-build-the-scikit-learn-lambda-layer)
-    - [Step 3: Provision Infrastructure with Terraform](#step-3-provision-infrastructure-with-terraform)
-    - [Step 4: Confirm SNS Email Subscription](#step-4-confirm-sns-email-subscription)
-    - [Step 5: Run Automated End-to-End Test](#step-5-run-automated-end-to-end-test)
-    - [Step 6: Stream Real-Time Traffic Simulation](#step-6-stream-real-time-traffic-simulation)
-    - [Step 7: Inspect Multi-Tier Components \& Query Analytics](#step-7-inspect-multi-tier-components--query-analytics)
-      - [1. Verify Flagged Items in DynamoDB](#1-verify-flagged-items-in-dynamodb)
-      - [2. Tail CloudWatch Logs](#2-tail-cloudwatch-logs)
-      - [3. Run Analytics via Amazon Athena](#3-run-analytics-via-amazon-athena)
-    - [Step 8: Clean Up \& Teardown](#step-8-clean-up--teardown)
-    - [Transaction Schema \& Input Format](#transaction-schema--input-format)
-    - [Pipeline Integration Interfaces](#pipeline-integration-interfaces)
-    - [Local Development](#local-development)
-  - [Configuration](#configuration)
-    - [Terraform Configuration Variables (`terraform/terraform.tfvars`)](#terraform-configuration-variables-terraformterraformtfvars)
-    - [Ingestion Lambda Environment Variables](#ingestion-lambda-environment-variables)
-    - [Alerting Lambda Environment Variables](#alerting-lambda-environment-variables)
-  - [Maintainers](#maintainers)
-  - [Contributing](#contributing)
-  - [License](#license)
+- [Background](#background)
+- [Install](#install)
+- [Usage](#usage)
+  - [Step 1: Configure AWS CLI & Local Environment](#step-1-configure-aws-cli--local-environment)
+  - [Step 2: Build the Scikit-Learn Lambda Layer](#step-2-build-the-scikit-learn-lambda-layer)
+  - [Step 3: Configure Variables & Deploy Infrastructure with Terraform](#step-3-configure-variables--deploy-infrastructure-with-terraform)
+  - [Step 4: Confirm SNS Email Subscription](#step-4-confirm-sns-email-subscription)
+  - [Step 5: Run Automated End-to-End Test](#step-5-run-automated-end-to-end-test)
+  - [Step 6: Stream Real-Time Traffic Simulation](#step-6-stream-real-time-traffic-simulation)
+  - [Step 7: Inspect Multi-Tier Components & Query Analytics](#step-7-inspect-multi-tier-components--query-analytics)
+  - [Step 8: Clean Up & Teardown](#step-8-clean-up--teardown)
+  - [Transaction Schema & Input Format](#transaction-schema--input-format)
+  - [Pipeline Integration Interfaces](#pipeline-integration-interfaces)
+  - [Local Development](#local-development)
+- [Configuration](#configuration)
+  - [What Must Be Changed (Required)](#what-must-be-changed-required)
+  - [What You Can Change (Optional)](#what-you-can-change-optional)
+  - [Automated Lambda Environment Variables](#automated-lambda-environment-variables)
+- [Maintainers](#maintainers)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -115,6 +107,7 @@ e2e_norm_005,acc_55102,2026-08-30T12:00:04Z,34.50,Local Grocery,Groceries,Austin
    ```bash
    cd terraform
    cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars and set your alert_email
    ```
 
 3. **Deploy via Terraform**:
@@ -136,14 +129,27 @@ e2e_norm_005,acc_55102,2026-08-30T12:00:04Z,34.50,Local Grocery,Groceries,Austin
 
 ## Usage
 
-### Step 1: Prepare Local Environment & Dependencies
+### Step 1: Configure AWS CLI & Local Environment
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install --upgrade pip
-pip install -r requirements.txt
-```
+> [!IMPORTANT]
+> **AWS Credentials Requirement**: Ensure your local terminal has active AWS credentials configured before running deployment or tests.
+
+1. **Configure AWS CLI credentials**:
+   ```bash
+   aws configure
+   # AWS Access Key ID [None]: <YOUR_AWS_ACCESS_KEY_ID>
+   # AWS Secret Access Key [None]: <YOUR_AWS_SECRET_ACCESS_KEY>
+   # Default region name [None]: us-east-1
+   # Default output format [None]: json
+   ```
+
+2. **Setup Python virtual environment & install dependencies**:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
 
 ---
 
@@ -162,24 +168,47 @@ python3 scripts/train_model.py
 
 ---
 
-### Step 3: Provision Infrastructure with Terraform
+### Step 3: Configure Variables & Deploy Infrastructure with Terraform
 
-```bash
-cd terraform
-terraform apply -auto-approve
+> [!IMPORTANT]
+> **Terraform Configuration**: You **must** create `terraform/terraform.tfvars` from `terraform/terraform.tfvars.example` and set your real email address in `alert_email` so SNS can deliver alerts.
 
-export S3_BUCKET_NAME=$(terraform output -raw raw_transactions_bucket_id)
-export DYNAMODB_TABLE_NAME=$(terraform output -raw dynamodb_table_name)
-export ATHENA_WORKGROUP=$(terraform output -raw athena_workgroup_name)
-export GLUE_DATABASE_NAME=$(terraform output -raw glue_database_name)
-cd ..
-```
+1. **Navigate to Terraform directory & create `terraform.tfvars`**:
+   ```bash
+   cd terraform
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+2. **Edit `terraform.tfvars`**:
+   ```hcl
+   aws_region   = "us-east-1"
+   environment  = "dev"
+   project_name = "serverless-fraud-detection"
+   alert_email  = "your-actual-email@example.com"  # <-- Replace with your email
+   ```
+
+3. **Initialize and deploy infrastructure**:
+   ```bash
+   terraform init
+   terraform apply -auto-approve
+   ```
+
+4. **Export resource outputs into your terminal session**:
+   ```bash
+   export S3_BUCKET_NAME=$(terraform output -raw raw_transactions_bucket_id)
+   export DYNAMODB_TABLE_NAME=$(terraform output -raw dynamodb_table_name)
+   export ATHENA_WORKGROUP=$(terraform output -raw athena_workgroup_name)
+   export GLUE_DATABASE_NAME=$(terraform output -raw glue_database_name)
+   cd ..
+   ```
 
 ---
 
 ### Step 4: Confirm SNS Email Subscription
 
-Check the inbox for the email configured in `terraform.tfvars`. Open the message from **AWS Notifications** and click **"Confirm subscription"**.
+Check the inbox of the email address provided in `alert_email`. Open the email from **AWS Notifications** with subject `AWS Notification - Subscription Confirmation` and click **"Confirm subscription"**.
+
+*(Without confirming, Amazon SNS cannot deliver fraud alert emails).*
 
 ---
 
@@ -190,6 +219,7 @@ Execute the automated test harness to inject known test vectors (`RULE_1`, `RULE
 ```bash
 python3 scripts/e2e_test.py --bucket "$S3_BUCKET_NAME"
 ```
+
 Expected output (Example):
 
 ```text
@@ -252,8 +282,8 @@ aws logs tail /aws/lambda/serverless-fraud-detection-alerting --since 5m
 
 **Option A: Athena Web Console**
 1. Open the [AWS Athena Query Editor](https://us-east-1.console.aws.amazon.com/athena/home?region=us-east-1#/query-editor).
-2. Switch **Workgroup** $\rightarrow$ `fraud_analysis_workgroup`.
-3. Switch **Database** $\rightarrow$ `fraud_analytics_db`.
+2. Switch **Workgroup** (top right) $\rightarrow$ `fraud_analysis_workgroup`.
+3. Switch **Database** (left sidebar) $\rightarrow$ `fraud_analytics_db`.
 4. Run analytical SQL (Example):
 ```sql
 SELECT 
@@ -354,29 +384,37 @@ python3 scripts/e2e_test.py --dry-run
 
 ## Configuration
 
-### Terraform Configuration Variables (`terraform/terraform.tfvars`)
+All customizable configuration values are organized in the **`terraform/terraform.tfvars`** file.
 
-| Variable | Type | Default | Description |
+### What Must Be Changed (Required)
+
+| Variable | File Location | Description |
+|---|---|---|
+| `alert_email` | `terraform/terraform.tfvars` | **Required.** The actual email address where Amazon SNS will send fraud alert emails. *(e.g. `your-email@example.com`)*. |
+
+### What You Can Change (Optional)
+
+| Variable | File Location | Default | Description |
 |---|---|---|---|
-| `aws_region` | string | `"us-east-1"` | AWS Region to deploy all infrastructure resources into. |
-| `environment` | string | `"dev"` | Environment name identifier (`dev`, `staging`, `prod`). |
-| `project_name` | string | `"serverless-fraud-detection"` | Prefix used for naming and tagging all AWS resources. |
-| `alert_email` | string | *(Required)* | Target email address to receive immediate Amazon SNS fraud alerts. |
+| `aws_region` | `terraform/terraform.tfvars` | `"us-east-1"` | AWS Region to deploy all resources into (e.g. `us-east-1`, `us-west-2`). |
+| `environment` | `terraform/terraform.tfvars` | `"dev"` | Environment tag (`dev`, `staging`, `prod`) used for resource naming and alerts. |
+| `project_name` | `terraform/terraform.tfvars` | `"serverless-fraud-detection"` | Prefix used for naming and tagging all AWS resources. |
 
-### Ingestion Lambda Environment Variables
+---
 
-| Variable | Description |
-|---|---|
-| `DYNAMODB_TABLE_NAME` | Name of the destination DynamoDB table for flagged transactions (`FlaggedTransactions`). |
-| `MODEL_PATH` | Path to the Scikit-Learn joblib model file (`model.joblib`). |
-| `AWS_REGION_NAME` | AWS Region where the Lambda function executes. |
+### Automated Lambda Environment Variables
 
-### Alerting Lambda Environment Variables
+> [!NOTE]
+> **No manual changes required.** The environment variables below are **automatically configured and wired by Terraform** during `terraform apply`. You do not need to edit Python files or configure AWS Lambda manually.
 
-| Variable | Description |
-|---|---|
-| `SNS_TOPIC_ARN` | Amazon Resource Name (ARN) of the SNS topic to publish fraud alerts to. |
-| `ENVIRONMENT` | Deployment environment tag for alert messages. |
+#### Ingestion Lambda (`lambda/ingestion/handler.py`)
+* **`DYNAMODB_TABLE_NAME`**: Automatically populated with `aws_dynamodb_table.flagged_transactions.name` (`FlaggedTransactions`).
+* **`MODEL_PATH`**: Automatically set to `"model.joblib"` (the Scikit-Learn Random Forest model packaged in the Lambda).
+* **`AWS_REGION_NAME`**: Automatically passed from `var.aws_region`.
+
+#### Alerting Lambda (`lambda/alerting/handler.py`)
+* **`SNS_TOPIC_ARN`**: Automatically populated with `aws_sns_topic.fraud_alerts.arn`.
+* **`ENVIRONMENT`**: Automatically passed from `var.environment` to label alert subject lines.
 
 ---
 
