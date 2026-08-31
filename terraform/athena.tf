@@ -121,9 +121,10 @@ resource "aws_glue_catalog_table" "raw_transactions" {
 # AWS Athena Workgroup for Fraud Analysis
 # ==============================================================================
 resource "aws_athena_workgroup" "fraud_analysis_workgroup" {
-  name        = "fraud_analysis_workgroup"
-  description = "Dedicated Athena workgroup for ad-hoc fraud investigation and retrospective SQL analytics"
-  state       = "ENABLED"
+  name          = "fraud_analysis_workgroup"
+  description   = "Dedicated Athena workgroup for ad-hoc fraud investigation and retrospective SQL analytics"
+  state         = "ENABLED"
+  force_destroy = true
 
   configuration {
     enforce_workgroup_configuration    = true
